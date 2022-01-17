@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Put, Param, Delete, ValidationPipe, UsePipes } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -34,6 +34,11 @@ export class TasksController {
   @UsePipes(new ValidationPipe({ whitelist: true }))
   updateFinished(@Param('id') id: string, @Body() updateFinishedTaskDto: UpdateFinishedTaskDto) {
     return this.tasksService.updateFinished(id, updateFinishedTaskDto);
+  }
+
+  @Put(':id/group/:groupId')
+  setToGroup(@Param('id') id: string, @Param('groupId') groupId: string) {
+    return this.tasksService.setToGroup(id, groupId);
   }
 
   @Delete(':id')

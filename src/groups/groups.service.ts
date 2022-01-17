@@ -14,16 +14,42 @@ export class GroupsService {
     return createdTask.save();
   }
 
-  async findAll(): Promise<Group[]> {
+  async findAll(extended: boolean): Promise<Group[]> {
+    if (extended) return this.groupModel.aggregate([{
+      $lookup: {
+        from: "tasks",
+        localField: "_id",
+        foreignField: "group",
+        as: "tasks"
+      }
+    }]);
     return this.groupModel.find();
   }
 
   async findOne(id: string): Promise<any> {
-    return await this.groupModel.findById(id);
+    const result = await this.groupModel.aggregate([
+      {
+        $match: {
+          _id: new Types.ObjectId(id),
+        }
+      },
+      {
+        $lookup: {
+          from: "tasks",
+          localField: "_id",
+          foreignField: "group",
+          as: "tasks"
+        }
+      }
+    ]);
+    if (result.length > 0) return result[0];
+    else throw new NotFoundException();
   }
 
   async update(id: string, updateTaskDto: UpdateGroupDto): Promise<Group> {
-    return await this.groupModel.findByIdAndUpdate(id, updateTaskDto, { new: true });
+    const group = await this.groupModel.findByIdAndUpdate(id, updateTaskDto, { new: true });
+    if (group === null) throw new NotFoundException();
+    return group;
   }
 
   async remove(id: string): Promise<any> {
