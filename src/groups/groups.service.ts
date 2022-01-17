@@ -1,26 +1,32 @@
-import { Injectable } from '@nestjs/common';
-import { CreateGroupDto } from './dto/create-group.dto';
+import { Model, Types } from 'mongoose';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Group, GroupDocument } from './schemas/group.schema';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { CreateGroupDto } from './dto/create-group.dto';
 
 @Injectable()
 export class GroupsService {
-  create(createGroupDto: CreateGroupDto) {
-    return 'This action adds a new group';
+  constructor(@InjectModel(Group.name) private groupModel: Model<GroupDocument>) {}
+
+  async create(createGroupDto: CreateGroupDto): Promise<Group> {
+    const createdTask = new this.groupModel(createGroupDto);
+    return createdTask.save();
   }
 
-  findAll() {
-    return `This action returns all groups`;
+  async findAll(): Promise<Group[]> {
+    return this.groupModel.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} group`;
+  async findOne(id: string): Promise<any> {
+    return await this.groupModel.findById(id);
   }
 
-  update(id: number, updateGroupDto: UpdateGroupDto) {
-    return `This action updates a #${id} group`;
+  async update(id: string, updateTaskDto: UpdateGroupDto): Promise<Group> {
+    return await this.groupModel.findByIdAndUpdate(id, updateTaskDto, { new: true });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} group`;
+  async remove(id: string): Promise<any> {
+    return this.groupModel.deleteOne({ _id: id });
   }
 }
