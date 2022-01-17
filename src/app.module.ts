@@ -6,7 +6,7 @@ import { GroupsModule } from './groups/groups.module';
 import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
-  imports: [TasksModule, GroupsModule, MongooseModule.forRoot('mongodb://localhost:27017/nest')],
+  imports: [TasksModule, GroupsModule, MongooseModule.forRoot('mongodb://localhost:27017/nest?replicaSet=rs0')],
   controllers: [AppController],
   providers: [AppService],
 })

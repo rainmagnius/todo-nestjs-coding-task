@@ -1,13 +1,18 @@
-import { Model, Types } from 'mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Model, Connection, Types } from 'mongoose';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel, InjectConnection } from '@nestjs/mongoose';
 import { Group, GroupDocument } from './schemas/group.schema';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { CreateGroupDto } from './dto/create-group.dto';
+import { TasksService } from '../tasks/tasks.service';
 
 @Injectable()
 export class GroupsService {
-  constructor(@InjectModel(Group.name) private groupModel: Model<GroupDocument>) {}
+  constructor(
+    @InjectModel(Group.name) private groupModel: Model<GroupDocument>,
+    private readonly tasksService: TasksService,
+    @InjectConnection() private readonly connection: Connection,
+    ) {}
 
   async create(createGroupDto: CreateGroupDto): Promise<Group> {
     const createdTask = new this.groupModel(createGroupDto);
@@ -53,6 +58,19 @@ export class GroupsService {
   }
 
   async remove(id: string): Promise<any> {
-    return this.groupModel.deleteOne({ _id: id });
+    const session = await this.connection.startSession();
+ 
+    session.startTransaction();
+    try {
+      const group = await this.groupModel.deleteOne({ _id: id }).session(session);
+      await this.tasksService.removeByGroupId(id, session);
+      await session.commitTransaction();
+      return group;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 }

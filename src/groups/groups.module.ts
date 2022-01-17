@@ -3,9 +3,10 @@ import { GroupsService } from './groups.service';
 import { GroupsController } from './groups.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Group, GroupSchema } from './schemas/group.schema';
+import { TasksModule } from 'src/tasks/tasks.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }])],
+  imports: [TasksModule, MongooseModule.forFeature([{ name: Group.name, schema: GroupSchema }])],
   controllers: [GroupsController],
   providers: [GroupsService]
 })

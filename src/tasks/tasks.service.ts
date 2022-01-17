@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import { Model, ClientSession, Types } from 'mongoose';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Task, TaskDocument } from './schemas/task.schema';
@@ -43,5 +43,9 @@ export class TasksService {
 
   async remove(id: string): Promise<any> {
     return this.taskModel.deleteOne({ _id: id });
+  }
+
+  async removeByGroupId(groupId: string, session: ClientSession | null = null) {
+    return this.taskModel.deleteMany({ group: groupId }).session(session);
   }
 }
